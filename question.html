@@ -1,0 +1,121 @@
+<html>
+
+<head>
+    <style>
+        body {
+            width: 100%;
+            margin: 0%;
+            padding: 0;
+            height: 100vh;
+        }
+
+        .wrapper {
+            background-color: bisque;
+        }
+
+        .container {
+            display: flex;
+            padding: 2em;
+            margin: auto;
+            flex-flow: row wrap;
+            align-content: space-between;
+            justify-content: space-between;
+        }
+
+        .card {
+            display: flex;
+            background-color: aquamarine;
+            width: 30%;
+            height: 10em;
+            margin: 1em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <div class="container">
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        class Activity {
+            constructor({ key, type, activity, participants, price, link, accessibility }) {
+                this.data = { key, type, activity, participants, price, link, accessibility };
+                this.card = makeCard(this.data);
+            }
+            attach(containerName) {
+                const container = document.querySelector(containerName);
+                container.appendChild(this.card);
+            }
+        }
+
+        function makeCardDetails(cardDetails) {
+            const cardContainer = document.createElement('div');
+            cardContainer.classList.add('card-container');
+            for (member in cardDetails) {
+                const div = document.createElement('div');
+                div.textContent = cardDetails[member];
+                cardContainer.appendChild(div);
+            }
+            return cardContainer;
+        }
+
+        function makeCard(cardDetails) {
+            const element = document.createElement('div');
+            const details = makeCardDetails(cardDetails);
+            element.appendChild(details);
+            return element;
+        }
+
+        function fetchResources(requestInfo) {
+            console.log('fetching resources');
+            const response = fetch(requestInfo);
+            const action = (element) => {
+                console.log('creating activity');
+                const card = new Activity(element);
+                console.dir(card);
+                card.attach('.container');
+                console.log('card attached');
+            }
+            console.log('got a response');
+            return response
+                .then((data) => data.json())
+                .then((json) => {
+                    console.log('got json data');
+                    if (json instanceof Array) {
+                        console.log('api returned few results');
+                        json.forEach(action);
+                    } else {
+                        console.log('api returned one result');
+                        action(json);
+                    }
+                })
+        }
+
+        const entry = new Promise((ok, no) => {
+            window.addEventListener('load', ok);
+        }).then(() => {
+            console.log("page loaded")
+        }).then(() => {
+            return fetchResources('http://www.boredapi.com/api/activity')
+        }).catch((err) => {
+            const errorCard = makeCard({
+                title: 'error',
+                content: err.message,
+                stack: err.stack
+            })
+            const errorContainer = document.querySelector('.container');
+            errorContainer.appendChild(errorCard);
+            
+        });
+
+    </script>
+</body>
+
+</html>
